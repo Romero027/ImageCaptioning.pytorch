@@ -179,7 +179,8 @@ def eval_split(model, crit, loader, eval_kwargs={}):
                 print('\n'.join([utils.decode_sequence(model.vocab, _['seq'].unsqueeze(0))[0] for _ in model.done_beams[i]]))
                 print('--' * 10)
         sents = utils.decode_sequence(model.vocab, seq)
-
+        
+        inference_captions = []
         for k, sent in enumerate(sents):
             entry = {'image_id': data['infos'][k]['id'], 'caption': sent, 'perplexity': perplexity[k].item(), 'entropy': entropy[k].item()}
             if eval_kwargs.get('dump_path', 0) == 1:
@@ -190,7 +191,7 @@ def eval_split(model, crit, loader, eval_kwargs={}):
                 cmd = 'cp "' + os.path.join(eval_kwargs['image_root'], data['infos'][k]['file_path']) + '" vis/imgs/img' + str(len(predictions)) + '.jpg' # bit gross
                 print(cmd)
                 os.system(cmd)
-
+            inference_captions.append(entry['caption'])
             if verbose:
                 print('image %s: %s' %(entry['image_id'], entry['caption']))
 
@@ -223,7 +224,7 @@ def eval_split(model, crit, loader, eval_kwargs={}):
 
     # Switch back to training mode
     model.train()
-    return loss_sum/loss_evals, predictions, lang_stats
+    return loss_sum/loss_evals, predictions, lang_stats, inference_captions
 
 
 # Only run when sample_n > 0

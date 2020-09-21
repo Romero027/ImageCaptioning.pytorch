@@ -1,6 +1,8 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 import json
 import numpy as np
@@ -18,6 +20,7 @@ import argparse
 import captioning.utils.misc as utils
 import captioning.modules.losses as losses
 import torch
+import time
 
 # Input arguments and options
 parser = argparse.ArgumentParser()
@@ -74,6 +77,8 @@ if opt.only_lang_eval == 1 or (not opt.force and os.path.isfile(pred_fn)):
     lang_stats = eval_utils.language_eval(opt.input_json, predictions, n_predictions, vars(opt), opt.split)
     print(lang_stats)
     os._exit(0)
+print("-" * 100)
+
 
 # At this point only_lang_eval if 0
 if not opt.force:
@@ -93,6 +98,7 @@ if not opt.force:
 opt.vocab = vocab
 model = models.setup(opt)
 del opt.vocab
+print(opt.model)
 model.load_state_dict(torch.load(opt.model, map_location='cpu'))
 model.to(opt.device)
 model.eval()
@@ -110,11 +116,14 @@ else:
 # So make sure to use the vocab in infos file.
 loader.dataset.ix_to_word = infos['vocab']
 
-
+start = time.time()
 # Set sample options
 opt.dataset = opt.input_json
-loss, split_predictions, lang_stats = eval_utils.eval_split(model, crit, loader, 
+loss, split_predictions, lang_stats, caption= eval_utils.eval_split(model, crit, loader, 
         vars(opt))
+
+print(f"Time to run inference = {time.time() - start}")
+print(f"Caption is {caption}")
 
 print('loss: ', loss)
 if lang_stats:
