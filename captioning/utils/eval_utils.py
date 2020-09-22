@@ -192,7 +192,7 @@ def eval_split(model, crit, loader, eval_kwargs={}):
                 cmd = 'cp "' + os.path.join(eval_kwargs['image_root'], data['infos'][k]['file_path']) + '" vis/imgs/img' + str(len(predictions)) + '.jpg' # bit gross
                 print(cmd)
                 os.system(cmd)
-            inference_captions[ntpath.basename(data['infos'][k]['file_path']).split('.')[0]] = entry['caption']
+            inference_captions[int(ntpath.basename(data['infos'][k]['file_path']).split('.')[0].split('_')[-1])] = entry['caption']
             if verbose:
                 print('image %s: %s' %(entry['image_id'], entry['caption']))
 

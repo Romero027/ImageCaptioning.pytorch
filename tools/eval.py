@@ -8,7 +8,7 @@ import json
 import numpy as np
 
 import time
-import os
+import os, pickle
 from gt_caption import *
 from six.moves import cPickle
 
@@ -127,19 +127,46 @@ loss, split_predictions, lang_stats, caption= eval_utils.eval_split(model, crit,
 print(f"Time to run inference = {time.time() - start}")
 print(f"There are {len(caption)} captions and they are {caption}")
 
+print(f"evaluating")
 import nltk
 nltk.download('punkt')
-from nltk.translate.bleu_score import 
+from nltk.translate.bleu_score import corpus_bleu
 from nltk import word_tokenize
 
 
-def evaluate_bleu4(ref, hypo):
-  ref = [[word_tokenize(ref)]]
-  hypo = [word_tokenize(hypo)]
-  return corpus_bleu(ref, hypo)
+with open("coco-util/cat_caption_10000.pkl", "rb") as f:
+    gt_caption = pickle.load(f)
 
-gt = dict[opt.video_name]
-dts = caption
+
+def evaluate_bleu4(ref_lists, hypo):
+  refs = []
+  for r in ref_lists:
+      refs.append(word_tokenize(r))    
+  ref = [refs]
+  hypo = [word_tokenize(hypo)]
+  return corpus_bleu(ref, hypo, weights=(0.5, 0.5,))
+
+bleus = []
+for img, gt in gt_caption.items():
+    if img in caption:
+        hypo = caption[img] 
+        score = evaluate_bleu4(gt, hypo)
+        if score < 0.01:
+            bleus.append(0.01)
+        else:
+            bleus.append(score)
+    else:
+        bleus.append(0.0)
+
+
+print(sum(bleus)/len(bleus))        
+    
+
+
+
+"""
+#gt = dict[opt.video_name]
+#dts = caption
 
 sum_bleu = 0
 for idx, hypo in dts.items():
@@ -149,6 +176,7 @@ for idx, hypo in dts.items():
 
 print(f'Total bleu score is {sum_bleu}')
 
+"""
 
 #print('loss: ', loss)
 #if lang_stats:
