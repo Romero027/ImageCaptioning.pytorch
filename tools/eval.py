@@ -9,6 +9,7 @@ import numpy as np
 
 import time
 import os
+from gt_caption import *
 from six.moves import cPickle
 
 import captioning.utils.opts as opts
@@ -37,6 +38,7 @@ parser.add_argument('--force', type=int, default=0,
                 help='force to evaluate no matter if there are results available')
 parser.add_argument('--device', type=str, default='cuda',
                 help='cpu or cuda')
+parser.add_argument('--video_name', type=int, default=-1)
 opts.add_eval_options(parser)
 opts.add_diversity_opts(parser)
 opt = parser.parse_args()
@@ -123,12 +125,35 @@ loss, split_predictions, lang_stats, caption= eval_utils.eval_split(model, crit,
         vars(opt))
 
 print(f"Time to run inference = {time.time() - start}")
-print(f"Caption is {caption}")
+print(f"There are {len(caption)} captions and they are {caption}")
 
-print('loss: ', loss)
-if lang_stats:
-    print(lang_stats)
+import nltk
+nltk.download('punkt')
+from nltk.translate.bleu_score import 
+from nltk import word_tokenize
 
-if opt.dump_json == 1:
-    # dump the json
-    json.dump(split_predictions, open('vis/vis.json', 'w'))
+
+def evaluate_bleu4(ref, hypo):
+  ref = [[word_tokenize(ref)]]
+  hypo = [word_tokenize(hypo)]
+  return corpus_bleu(ref, hypo)
+
+gt = dict[opt.video_name]
+dts = caption
+
+sum_bleu = 0
+for idx, hypo in dts.items():
+    for i in range(int(idx)-10, int(idx)+10): 
+        if str(i) in gt:
+            sum_bleu += evaluate_bleu4(gt[str(i)], hypo)
+
+print(f'Total bleu score is {sum_bleu}')
+
+
+#print('loss: ', loss)
+#if lang_stats:
+#    print(lang_stats)
+
+#if opt.dump_json == 1:
+#    # dump the json
+#    json.dump(split_predictions, open('vis/vis.json', 'w'))

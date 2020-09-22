@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import ntpath
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -180,7 +181,7 @@ def eval_split(model, crit, loader, eval_kwargs={}):
                 print('--' * 10)
         sents = utils.decode_sequence(model.vocab, seq)
         
-        inference_captions = []
+        inference_captions = {}
         for k, sent in enumerate(sents):
             entry = {'image_id': data['infos'][k]['id'], 'caption': sent, 'perplexity': perplexity[k].item(), 'entropy': entropy[k].item()}
             if eval_kwargs.get('dump_path', 0) == 1:
@@ -191,7 +192,7 @@ def eval_split(model, crit, loader, eval_kwargs={}):
                 cmd = 'cp "' + os.path.join(eval_kwargs['image_root'], data['infos'][k]['file_path']) + '" vis/imgs/img' + str(len(predictions)) + '.jpg' # bit gross
                 print(cmd)
                 os.system(cmd)
-            inference_captions.append(entry['caption'])
+            inference_captions[ntpath.basename(data['infos'][k]['file_path']).split('.')[0]] = entry['caption']
             if verbose:
                 print('image %s: %s' %(entry['image_id'], entry['caption']))
 

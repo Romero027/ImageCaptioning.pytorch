@@ -77,6 +77,7 @@ class DataLoaderRaw():
                         n = n + 1
 
         self.N = len(self.files)
+        print(f'self.files are {self.files}')
         print('DataLoaderRaw found ', self.N, ' images')
 
         self.iterator = 0
