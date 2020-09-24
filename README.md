@@ -106,6 +106,13 @@ $ python -m SimpleHTTPServer
 
 Now visit `localhost:8000` in your browser and you should see your predicted captions.
 
+### Inference(UPDATE)
+
+```bash
+$ python tools/eval.py --model model/fc_nsc/model-best.pth --infos_path model/fc_nsc/infos_fc_nsc-best.pkl --image_folder ./imgs --num_images 1 --force 1 --batch_size 1
+```
+
+
 ### Evaluate on Karpathy's test split
 
 ```bash
